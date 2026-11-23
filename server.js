@@ -8,8 +8,8 @@ const sb=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY)
 const PORT=+process.env.PORT||8080,INDEX=join(dirname(fileURLToPath(import.meta.url)),'public','index.html');
 const http=createServer((req,res)=>{ // обычные GET: проверка Render (/health) и сама игра
   if(req.url==='/health'){res.writeHead(200,{'content-type':'text/plain'});return res.end('ok')}
-  if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405);return res.end()}
-  readFile(INDEX,(e,d)=>{if(e){res.writeHead(404);return res.end('index.html не найден')}res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-cache'});res.end(req.method==='HEAD'?undefined:d)})});
+  if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405,{'content-type':'text/plain; charset=utf-8'});return res.end('Method Not Allowed')}
+  readFile(INDEX,(e,d)=>{if(e){res.writeHead(404,{'content-type':'text/plain; charset=utf-8'});return res.end('index.html не найден')}res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-cache'});res.end(req.method==='HEAD'?undefined:d)})});
 const wss=new WebSocketServer({server:http});http.listen(PORT);
 const C=new Map(),T=new Map(); // C: id->клиент, T: "от>кому" -> предложение обмена
 const lvl=x=>Math.floor(Math.sqrt(x/50))+1;
