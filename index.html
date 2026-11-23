@@ -310,7 +310,7 @@ case'raid':clearAv();NET.on=1;NET.h=m.host===NET.id;NET.g=!NET.h;NET.n=m.n;begin
 case'tr':toast(esc(m.nick)+': отдаёт '+m.gc+'🪙 '+m.gk+'◆, хочет '+m.wc+'🪙 '+m.wk+'◆ <button onclick="nsend({t:\'tok\',from:\''+m.from+'\'});this.parentNode.remove()">Принять</button>',15000);break;
 case'msg':toast(esc(m.m));break;
 case'rl':rl(m.from,m.d)}}
-function connect(nick){const tok=localStorage.nrt||(localStorage.nrt=crypto.randomUUID()),q=new URLSearchParams(location.search).get('ws'),url=q||((location.protocol==='https:'?'wss://':'ws://')+(location.hostname||'localhost')+':8080');
+function connect(nick){const tok=localStorage.nrt||(localStorage.nrt=crypto.randomUUID()),q=new URLSearchParams(location.search).get('ws'),url=q||(location.protocol==='file:'?'ws://localhost:8080':(location.protocol==='https:'?'wss://':'ws://')+location.host);
 $('#le').textContent='Подключение…';const ws=NET.ws=new WebSocket(url);ws.onopen=()=>ws.send(JSON.stringify({t:'login',token:tok,nick}));
 ws.onerror=()=>$('#le').textContent='Сервер недоступен: '+url;
 ws.onclose=()=>{if(NET.me){NET.me=0;NET.on=NET.g=NET.h=0;toast('Связь потеряна');toMenu()}};ws.onmessage=e=>onMsg(JSON.parse(e.data))}
