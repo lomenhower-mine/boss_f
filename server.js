@@ -1,7 +1,16 @@
 import {WebSocketServer} from 'ws';
 import {createClient} from '@supabase/supabase-js';
+import {createServer} from 'http';
+import {readFile} from 'fs';
+import {join,dirname} from 'path';
+import {fileURLToPath} from 'url';
 const sb=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY);
-const wss=new WebSocketServer({port:+process.env.PORT||8080});
+const PORT=+process.env.PORT||8080,INDEX=join(dirname(fileURLToPath(import.meta.url)),'public','index.html');
+const http=createServer((req,res)=>{ // обычные GET: проверка Render (/health) и сама игра
+  if(req.url==='/health'){res.writeHead(200,{'content-type':'text/plain'});return res.end('ok')}
+  if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405);return res.end()}
+  readFile(INDEX,(e,d)=>{if(e){res.writeHead(404);return res.end('index.html не найден')}res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-cache'});res.end(req.method==='HEAD'?undefined:d)})});
+const wss=new WebSocketServer({server:http});http.listen(PORT);
 const C=new Map(),T=new Map(); // C: id->клиент, T: "от>кому" -> предложение обмена
 const lvl=x=>Math.floor(Math.sqrt(x/50))+1;
 const pub=p=>({nick:p.nick,xp:p.xp,level:lvl(p.xp),coins:p.coins,cores:p.cores,up:p.up});
@@ -54,4 +63,4 @@ wss.on('connection',ws=>{
 });
 setInterval(()=>{const l=[...C.values()].filter(o=>o.mode==='hub').map(o=>[o.id,o.p.nick,o.x,o.z,o.yaw,lvl(o.p.xp)]);
   C.forEach(o=>o.mode==='hub'&&tx(o,{t:'hub',l}))},100);
-console.log('Nova Raid server on :'+(process.env.PORT||8080));
+console.log('Nova Raid server on :'+PORT);
